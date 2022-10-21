@@ -23,7 +23,7 @@
             <a class="nav-link text-white" href="#">{{ request.user }}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-white" href="#">로그아웃</a>
+            <a class="nav-link text-white" href="{% url 'accounts:logout' %}">로그아웃</a>
           </li>
           {% else %}
           <li class="nav-item">
