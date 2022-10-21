@@ -14,22 +14,29 @@ def index(request):
 
 @login_required
 def create(request):
-  if request.user.is_authenticated:
-    if request.method == 'POST':
-      review_form = ReviewForm(request.POST, request.FILES)
-      if review_form.is_valid():
-          review = review_form.save(commit=False)
-          review.user = request.user
-          review.save()
-          return redirect('reviews:index')
+    if request.user.is_authenticated:
+      if request.method == 'POST':
+        review_form = ReviewForm(request.POST, request.FILES)
+        if review_form.is_valid():
+            review = review_form.save(commit=False)
+            review.user = request.user
+            review.save()
+            return redirect('reviews:index')
+      else:
+        review_form = ReviewForm()
+      context = {
+        'review_form': review_form,
+      }
+      return render(request, 'reviews/create.html', context=context)
     else:
-      review_form = ReviewForm()
-    context = {
-      'review_form': review_form,
-    }
-    return render(request, 'reviews/create.html', context=context)
-  else:
-    return redirect('accounts:login')
+      return redirect('accounts:login')
 
+def detail(request, pk):
+  # 특정 글을 가져온다.
+  review = Review.objects.get(pk=pk)
+  context = {
+    'review': review,   
+  }
+  return render(request, 'reviews/detail.html', context)
 
 
