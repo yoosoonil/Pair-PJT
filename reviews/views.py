@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import render, redirect
-from .models import Review
-from .forms import ReviewForm
+from .models import Review, Comment
+from .forms import ReviewForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 # Create your views here.
@@ -9,7 +9,7 @@ from django.contrib import messages
 def index(request):
   review = Review.objects.all().order_by('-pk')
   context = {
-    'review': review,
+    'reviews': review,
   }
   return render(request, 'reviews/index.html', context)
 
@@ -35,8 +35,11 @@ def create(request):
 def detail(request, pk):
   # 특정 글을 가져온다.
   review = Review.objects.get(pk=pk)
+  comment_form = CommentForm()
   context = {
-    'review': review,   
+    'review': review,
+    'comments' : review.comment_set.all(),
+    'comment_form': comment_form,   
   }
   return render(request, 'reviews/detail.html', context)
 
@@ -67,3 +70,23 @@ def update(request, pk):
 def delete(request, pk):
     Review.objects.get(id=pk).delete()
     return redirect("reviews:index")
+
+@login_required 
+def comment_create(request, pk):
+    review = Review.objects.get(pk=pk)
+    comment_form = CommentForm(request.POST)
+    if comment_form.is_valid():
+        comment = comment_form.save(commit=False)
+        comment.review = review
+        comment.user = request.user
+        comment.save()
+    return redirect('reviews:detail', review.pk)
+  
+def comment_delete(request, pk, comment_pk):
+    comment = Comment.objects.get(pk=comment_pk)
+    if request.user == comment.user:
+        comment.delete()
+        messages.warning(request, "댓글이 삭제되었습니다.")
+    return redirect("reviews:detail", pk)
+    
+  
